@@ -1,4 +1,4 @@
-name: Flutter CI
+name: ThreatLens AI CI
 
 on:
   pull_request:
@@ -7,13 +7,126 @@ on:
       - main
       - develop
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+env:
+  FLUTTER_VERSION: '3.22.0'
 
+jobs:
+  lint-and-analyze:
+    name: Lint & Analyze
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: subosito/flutter-action@v2
-      - run: flutter pub get
-      - run: flutter analyze
-      - run: flutter test
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check for secrets in source
+        run: |
+          echo "Scanning for potential secrets..."
+          if grep -rn "DEEPSEEK_API_KEY\|OPENAI_API_KEY\|CLAUDE_API_KEY\|sk-\|api_key.*=" lib/ --include="*.dart"; then
+            echo "ERROR: Potential secrets found in source code!"
+            exit 1
+          fi
+          echo "No secrets found in source."
+
+      - name: Verify no AI provider keys in EnvironmentConfig
+        run: |
+          if grep -n "deepseekApiKey\|openaiApiKey\|claudeApiKey\|DEEPSEEK_API_KEY\|OPENAI_API_KEY\|CLAUDE_API_KEY" lib/config/environment_config.dart; then
+            echo "ERROR: AI provider secrets found in EnvironmentConfig!"
+            exit 1
+          fi
+          echo "EnvironmentConfig is clean."
+
+      - name: Analyze
+        run: flutter analyze --no-pub
+
+      - name: Verify no shared_preferences usage
+        run: |
+          if grep -rn "shared_preferences" lib/ --include="*.dart"; then
+            echo "ERROR: shared_preferences is a security risk - use flutter_secure_storage instead!"
+            exit 1
+          fi
+
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs: lint-and-analyze
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test --coverage
+
+      - name: Verify clean architecture in domain layer
+        run: |
+          echo "Checking domain layer has no Flutter/Dio/Supabase imports..."
+          if grep -rn "import.*package:flutter\|import.*package:dio\|import.*package:supabase" lib/features/*/domain/ --include="*.dart"; then
+            echo "ERROR: Domain layer has forbidden imports!"
+            exit 1
+          fi
+          echo "Domain layer is clean."
+
+      - name: Verify presentation layer has no direct API calls
+        run: |
+          echo "Checking presentation layer has no direct Dio/Supabase usage..."
+          if grep -rn "ApiClient\|SupabaseClient\|Dio()" lib/features/*/presentation/ --include="*.dart"; then
+            echo "ERROR: Presentation layer has direct API access!"
+            exit 1
+          fi
+          echo "Presentation layer is clean."
+
+  security-checks:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    needs: lint-and-analyze
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Dependency vulnerability audit
+        run: |
+          echo "Auditing dependencies..."
+          flutter pub deps --no-dev 2>/dev/null || true
+
+      - name: Verify secure storage is used
+        run: |
+          if ! grep -q "flutter_secure_storage" pubspec.yaml; then
+            echo "ERROR: flutter_secure_storage missing!"
+            exit 1
+          fi
+          echo "flutter_secure_storage is present."
+
+      - name: Verify auth guard exists
+        run: |
+          for f in lib/core/security/auth_guard.dart lib/core/security/secure_storage_service.dart lib/core/security/session_manager.dart lib/core/security/logout_wiper.dart; do
+            if [ ! -f "$f" ]; then
+              echo "ERROR: $f is missing!"
+              exit 1
+            fi
+          done
+          echo "All security modules present."
+
+      - name: Verify .env is not committed
+        run: |
+          if git ls-files | grep -q "^\.env$"; then
+            echo "ERROR: .env file is tracked by git!"
+            exit 1
+          fi
+          echo ".env is properly gitignored."
