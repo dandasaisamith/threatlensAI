@@ -1,0 +1,25 @@
+name: threatlens-protection
+
+description: >
+  Baseline repository ruleset for production-grade collaboration.
+
+applies_to:
+  - branch: main
+  - branch: develop
+
+enforcement: active
+
+pull_request:
+  required_approving_review_count: 1
+  dismiss_stale_reviews_on_push: true
+  require_code_owner_review: false
+  require_last_push_approval: true
+
+required_status_checks:
+  strict_required_status_checks_policy: true
+  contexts:
+    - ci / quality
+
+restrictions:
+  block_force_pushes: true
+  block_deletions: true
