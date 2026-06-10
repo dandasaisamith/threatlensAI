@@ -1,0 +1,184 @@
+name: ThreatLens AI Branch Protection Ruleset
+description: Comprehensive branch protection and governance rules for ThreatLens AI
+
+# Main branch protection ruleset
+rules:
+  - name: Protect main branch
+    description: Core protection rules for production main branch
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        exclude: []
+        include:
+          - ~DEFAULT_BRANCH
+    rules:
+      # Require pull request reviews
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 1
+          dismiss_stale_reviews_on_push: true
+          require_code_owner_review: false
+          require_last_push_approval: true
+      
+      # Require status checks
+      - type: required_status_checks
+        parameters:
+          required_check:
+            - "build-and-test"
+            - "lint-and-analyze"
+            - "security-checks"
+      
+      # Require branches to be up to date
+      - type: required_status_checks
+        parameters:
+          strict_required_status_checks_policy: true
+      
+      # Require commit signatures
+      - type: commit_signature_policy
+        parameters:
+          enforcement: enabled
+
+  - name: Protect develop branch
+    description: Protection rules for integration/develop branch
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        exclude: []
+        include:
+          - develop
+    rules:
+      # Require pull request reviews
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 1
+          dismiss_stale_reviews_on_push: true
+          require_code_owner_review: false
+          require_last_push_approval: false
+      
+      # Require status checks
+      - type: required_status_checks
+        parameters:
+          required_check:
+            - "build-and-test"
+            - "lint-and-analyze"
+      
+      # Allow push to develop for maintainers
+      - type: push
+        parameters:
+          restrict_who_can_push:
+            - type: Teams
+              name: maintainers
+
+  - name: Protect release branches
+    description: Protection rules for release/* branches
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        exclude: []
+        include:
+          - release/*
+    rules:
+      # Require pull request reviews
+      - type: pull_request
+        parameters:
+          required_approving_review_count: 2
+          dismiss_stale_reviews_on_push: true
+          require_code_owner_review: false
+          require_last_push_approval: true
+      
+      # Require status checks
+      - type: required_status_checks
+        parameters:
+          required_check:
+            - "build-and-test"
+            - "lint-and-analyze"
+            - "security-checks"
+      
+      # Require commit signatures
+      - type: commit_signature_policy
+        parameters:
+          enforcement: enabled
+
+  - name: Restrict direct pushes
+    description: Prevent direct pushes to protected branches
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        exclude: []
+        include:
+          - main
+          - develop
+          - release/*
+    rules:
+      # Require pull requests for all changes
+      - type: pull_request
+        parameters:
+          dismiss_stale_reviews_on_push: true
+          require_last_push_approval: true
+
+  - name: Enforce commit message format
+    description: Enforce conventional commit messages
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        exclude: []
+        include:
+          - ~DEFAULT_BRANCH
+          - develop
+          - release/*
+    rules:
+      - type: commit_message_pattern
+        parameters:
+          operator: regex
+          pattern: "^(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\\(.+\\))?!?: .{1,72}(\\n\\n.*)?$"
+
+  - name: Restrict deletion
+    description: Prevent accidental branch deletion
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        exclude: []
+        include:
+          - main
+          - develop
+          - release/*
+    rules:
+      - type: deletion
+        parameters:
+          restricted: true
+          restrict_who_can_delete:
+            - type: Admins
+
+# Bypass rules for specific scenarios
+bypass_actors:
+  - type: RepositoryRole
+    role: admin
+    bypass_mode: always
+
+# Repository-level settings
+repository_settings:
+  # Require branches to be up to date before merging
+  require_linear_history: false
+  
+  # Allow force pushes only to admins
+  allow_force_pushes: false
+  
+  # Require conversation resolution before merging
+  require_conversations_to_be_resolved: true
+  
+  # Auto-delete head branches after merge
+  delete_branch_on_merge: true
+  
+  # Require status checks to pass before merge
+  required_status_checks:
+    strict: true
+    contexts:
+      - "build-and-test"
+      - "lint-and-analyze"
+      - "security-checks"
