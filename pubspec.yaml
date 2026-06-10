@@ -5,9 +5,9 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  # Stable Dart/Flutter 3.x or higher
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.0.0"
+  # Use stable Dart/Flutter 3.x releases (minimum tested baseline)
+  sdk: ">=3.2.0 <4.0.0"
+  flutter: ">=3.22.0"
 
 dependencies:
   flutter:
