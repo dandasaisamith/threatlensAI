@@ -1,6 +1,6 @@
 # ThreatLens AI
 
-A production-grade AI Threat Modeling Assistant built with Flutter.
+AI Threat Modeling Assistant built with Flutter.
 
 ## Overview
 
