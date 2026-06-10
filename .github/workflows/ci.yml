@@ -10,9 +10,14 @@ on:
       - main
       - develop
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,6 +60,8 @@ jobs:
             check_path: ios
             build_command: flutter build ios --debug --no-codesign
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
