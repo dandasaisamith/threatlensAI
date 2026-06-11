@@ -21,6 +21,11 @@ class AuthRepositoryImpl implements AuthRepository {
   final SecureStorageService _secureStorage;
   final SessionManager _sessionManager;
 
+  int _expiresAtToMilliseconds(int? expiresAt) {
+    if (expiresAt == null || expiresAt <= 0) return 0;
+    return expiresAt < 1000000000000 ? expiresAt * 1000 : expiresAt;
+  }
+
   /// Helper to safely convert nullable Supabase User to AuthUser.
   AuthUser? _toAuthUser(User? supabaseUser) {
     if (supabaseUser == null) return null;
@@ -57,7 +62,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     final session = response.session!;
     final appUser = _toAuthUser(response.user)!;
-    final expiryMs = session.expiresAt ?? 0;
+    final expiryMs = _expiresAtToMilliseconds(session.expiresAt);
     final refreshToken = session.refreshToken ?? '';
 
     await _sessionManager.persistAuth(
@@ -65,7 +70,7 @@ class AuthRepositoryImpl implements AuthRepository {
       refreshToken: refreshToken,
       userId: appUser.id,
       email: appUser.email,
-      expiryMs: expiryMs,
+      expiresAt: expiryMs,
     );
 
     return AuthResult(
@@ -86,13 +91,21 @@ class AuthRepositoryImpl implements AuthRepository {
       password: password,
     );
 
-    if (response.session == null || response.user == null) {
-      throw Exception('Sign up failed: no session returned');
+    if (response.user == null) {
+      throw Exception('Sign up failed: no user returned');
     }
 
-    final session = response.session!;
     final appUser = _toAuthUser(response.user)!;
-    final expiryMs = session.expiresAt ?? 0;
+    final session = response.session;
+
+    if (session == null) {
+      return AuthResult(
+        user: appUser,
+        requiresEmailVerification: true,
+      );
+    }
+
+    final expiryMs = _expiresAtToMilliseconds(session.expiresAt);
     final refreshToken = session.refreshToken ?? '';
 
     await _sessionManager.persistAuth(
@@ -100,7 +113,7 @@ class AuthRepositoryImpl implements AuthRepository {
       refreshToken: refreshToken,
       userId: appUser.id,
       email: appUser.email,
-      expiryMs: expiryMs,
+      expiresAt: expiryMs,
     );
 
     return AuthResult(

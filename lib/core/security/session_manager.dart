@@ -71,8 +71,9 @@ class SessionManager extends ChangeNotifier {
     required String refreshToken,
     required String userId,
     required String email,
-    required int expiryMs,
+    required int expiresAt,
   }) async {
+    final expiryMs = _expiresAtToMilliseconds(expiresAt);
     await _secureStorage.storeAccessToken(accessToken);
     await _secureStorage.storeRefreshToken(refreshToken);
     await _secureStorage.storeUserId(userId);
@@ -83,7 +84,7 @@ class SessionManager extends ChangeNotifier {
 
   /// Handle Supabase session and persist it.
   Future<void> _persistSession(Session session) async {
-    final expiryMs = session.expiresAt ?? 0;
+    final expiryMs = _expiresAtToMilliseconds(session.expiresAt);
     final userId = _supabase.auth.currentUser?.id ?? '';
     final email = _supabase.auth.currentUser?.email ?? '';
     final refreshToken = session.refreshToken ?? '';
@@ -123,8 +124,8 @@ class SessionManager extends ChangeNotifier {
   void _scheduleTokenRefresh(Session session) {
     _refreshTimer?.cancel();
 
-    final expiresAtMs = session.expiresAt;
-    if (expiresAtMs == null) return;
+    final expiresAtMs = _expiresAtToMilliseconds(session.expiresAt);
+    if (expiresAtMs == 0) return;
 
     final expiresAt = DateTime.fromMillisecondsSinceEpoch(expiresAtMs);
     final refreshAt = expiresAt.subtract(const Duration(minutes: 5));
@@ -141,6 +142,11 @@ class SessionManager extends ChangeNotifier {
         _updateState(SessionState.expired);
       }
     });
+  }
+
+  int _expiresAtToMilliseconds(int? expiresAt) {
+    if (expiresAt == null || expiresAt <= 0) return 0;
+    return expiresAt < 1000000000000 ? expiresAt * 1000 : expiresAt;
   }
 
   /// Handle session expiration — clear state and notify listeners.
