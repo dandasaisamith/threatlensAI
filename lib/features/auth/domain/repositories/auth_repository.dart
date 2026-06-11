@@ -51,13 +51,15 @@ class AuthUser {
 class AuthResult {
   const AuthResult({
     required this.user,
-    required this.accessToken,
-    required this.refreshToken,
-    required this.expiresAt,
+    this.accessToken,
+    this.refreshToken,
+    this.expiresAt,
+    this.requiresEmailVerification = false,
   });
 
   final AuthUser user;
-  final String accessToken;
-  final String refreshToken;
-  final DateTime expiresAt;
+  final String? accessToken;
+  final String? refreshToken;
+  final DateTime? expiresAt;
+  final bool requiresEmailVerification;
 }
