@@ -86,9 +86,10 @@ class SessionManager extends ChangeNotifier {
     final expiryMs = session.expiresAt ?? 0;
     final userId = _supabase.auth.currentUser?.id ?? '';
     final email = _supabase.auth.currentUser?.email ?? '';
+    final refreshToken = session.refreshToken ?? '';
 
     await _secureStorage.storeAccessToken(session.accessToken);
-    await _secureStorage.storeRefreshToken(session.refreshToken);
+    await _secureStorage.storeRefreshToken(refreshToken);
     await _secureStorage.storeUserId(userId);
     await _secureStorage.storeUserEmail(email);
     await _secureStorage.storeSessionExpiry(expiryMs);

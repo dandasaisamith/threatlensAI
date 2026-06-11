@@ -1,4 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException, User, AuthUser;
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthUser;
 
 import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/security/secure_storage_service.dart';
@@ -24,16 +24,19 @@ class AuthRepositoryImpl implements AuthRepository {
   /// Helper to safely convert nullable Supabase User to AuthUser.
   AuthUser? _toAuthUser(User? supabaseUser) {
     if (supabaseUser == null) return null;
+    final metadata = supabaseUser.userMetadata;
+    final displayName = metadata?['display_name'] as String?;
+    final createdAtStr = supabaseUser.createdAt;
+    final lastSignInStr = supabaseUser.lastSignInAt;
     return AuthUser(
       id: supabaseUser.id,
       email: supabaseUser.email ?? '',
-      displayName: supabaseUser.userMetadata?['display_name'] as String?,
-      createdAt: supabaseUser.createdAt.isNotEmpty
-          ? DateTime.tryParse(supabaseUser.createdAt)
+      displayName: displayName,
+      createdAt: createdAtStr.isNotEmpty
+          ? DateTime.tryParse(createdAtStr)
           : null,
-      lastSignInAt: supabaseUser.lastSignInAt != null &&
-              supabaseUser.lastSignInAt!.isNotEmpty
-          ? DateTime.tryParse(supabaseUser.lastSignInAt!)
+      lastSignInAt: lastSignInStr != null && lastSignInStr.isNotEmpty
+          ? DateTime.tryParse(lastSignInStr)
           : null,
     );
   }
@@ -55,10 +58,11 @@ class AuthRepositoryImpl implements AuthRepository {
     final session = response.session!;
     final appUser = _toAuthUser(response.user)!;
     final expiryMs = session.expiresAt ?? 0;
+    final refreshToken = session.refreshToken ?? '';
 
     await _sessionManager.persistAuth(
       accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
+      refreshToken: refreshToken,
       userId: appUser.id,
       email: appUser.email,
       expiryMs: expiryMs,
@@ -67,7 +71,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return AuthResult(
       user: appUser,
       accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
+      refreshToken: refreshToken,
       expiresAt: DateTime.fromMillisecondsSinceEpoch(expiryMs),
     );
   }
@@ -89,10 +93,11 @@ class AuthRepositoryImpl implements AuthRepository {
     final session = response.session!;
     final appUser = _toAuthUser(response.user)!;
     final expiryMs = session.expiresAt ?? 0;
+    final refreshToken = session.refreshToken ?? '';
 
     await _sessionManager.persistAuth(
       accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
+      refreshToken: refreshToken,
       userId: appUser.id,
       email: appUser.email,
       expiryMs: expiryMs,
@@ -101,7 +106,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return AuthResult(
       user: appUser,
       accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
+      refreshToken: refreshToken,
       expiresAt: DateTime.fromMillisecondsSinceEpoch(expiryMs),
     );
   }

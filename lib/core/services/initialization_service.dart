@@ -58,11 +58,9 @@ class InitializationService {
   }
 
   static Future<void> _initializePostHog() async {
-    await PostHog.enable();
-    PostHog.setup(
-      EnvironmentConfig.postHogApiKey,
-      host: EnvironmentConfig.postHogApiHost,
-    );
+    // Posthog v3.3.0: setup() was removed, use enable() to start tracking
+    // API key is configured via native platform (AndroidManifest.xml / Info.plist)
+    await Posthog().enable();
   }
 
   static void _registerServices() {

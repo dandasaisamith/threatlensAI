@@ -39,9 +39,6 @@ dependencies:
   # Secure Storage (OWASP MASVS compliant)
   flutter_secure_storage: ^9.0.0
 
-  # Network Connectivity
-  connectivity_plus: ^6.0.0
-
   # Dependency Injection
   get_it: ^7.6.0
 
@@ -90,7 +87,6 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-    - .env
 
   fonts:
     - family: GoogleSans

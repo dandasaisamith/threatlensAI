@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'config/environment_config.dart';
 import 'config/router.dart';
-import 'core/security/session_manager.dart';
 import 'core/services/initialization_service.dart';
 
 /// Application entry point

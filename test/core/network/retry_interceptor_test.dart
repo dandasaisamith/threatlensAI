@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:threatlensia/core/network/interceptors/retry_interceptor.dart';
 
 void main() {
   group('RetryInterceptor', () {
