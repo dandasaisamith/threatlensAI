@@ -6,10 +6,10 @@ import 'config/router.dart';
 import 'core/services/initialization_service.dart';
 
 /// Application entry point
-/// 
+///
 /// Initializes:
 /// - Environment configuration
-/// - Core services (Isar, Supabase, PostHog)
+/// - Core services (Isar, Supabase, secure storage)
 /// - Error tracking (Sentry)
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,8 +31,14 @@ void main() async {
       options.debug = EnvironmentConfig.isDebug;
     },
     appRunner: () => runApp(
-      const ProviderScope(
-        child: ThreatLensAIApp(),
+      ProviderScope(
+        overrides: [
+          // Override sessionManagerProvider with the initialized instance
+          sessionManagerProvider.overrideWithValue(
+            InitializationService.sessionManager,
+          ),
+        ],
+        child: const ThreatLensAIApp(),
       ),
     ),
   );
@@ -40,7 +46,7 @@ void main() async {
 
 /// Root widget for the ThreatLens AI application
 class ThreatLensAIApp extends ConsumerWidget {
-  const ThreatLensAIApp({Key? key}) : super(key: key);
+  const ThreatLensAIApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,14 +69,14 @@ class ThreatLensAIApp extends ConsumerWidget {
         brightness: Brightness.dark,
       ),
       fontFamily: 'GoogleSans',
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         elevation: 0,
-        backgroundColor: const Color(0xFF1F2937),
+        backgroundColor: Color(0xFF1F2937),
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
       scaffoldBackgroundColor: const Color(0xFF111827),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 1,
         color: const Color(0xFF1F2937),
         shape: RoundedRectangleBorder(

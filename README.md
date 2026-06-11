@@ -4,66 +4,78 @@ AI Threat Modeling Assistant built with Flutter.
 
 ## Overview
 
-ThreatLens AI is an intelligent threat modeling platform that uses advanced AI (DeepSeek) to help security professionals:
+ThreatLens AI is an intelligent threat modeling platform that uses AI to help security professionals:
 - Analyze system architectures for security threats
-- Generate comprehensive threat models
+- Generate comprehensive threat models using STRIDE methodology
 - Identify assets, attack paths, and vulnerabilities
-- Calculate risk scores and mitigation strategies
+- Calculate risk scores using DREAD scoring
+- Generate mitigation strategies
 - Collaborate through AI-powered chat
 - Export detailed security reports
 
+## Security Architecture
+
+```
+Flutter App
+    ↓ HTTP (Bearer JWT token)
+Supabase Edge Function
+    ↓ Server-side only
+DeepSeek / OpenAI
+    ↓ Response
+Flutter App
+```
+
+**No AI provider secrets exist in the mobile client.** All API keys are managed server-side through Supabase Edge Functions.
+
 ## Tech Stack
 
-- **Flutter** - Cross-platform UI framework
-- **Riverpod** - State management
-- **GoRouter** - Navigation
-- **Supabase** - Authentication & Backend
-- **DeepSeek API** - AI threat modeling engine
-- **Isar** - Local database with offline support
-- **Dio** - HTTP client
-- **PostHog** - Analytics
-- **Sentry** - Error tracking & monitoring
-- **Freezed** - Code generation for models
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| UI Framework | Flutter 3.22+ | Cross-platform |
+| State Management | Riverpod 2.4+ | Reactive state |
+| Navigation | GoRouter 14+ | Route management |
+| HTTP Client | Dio 5.3+ | Network requests |
+| Secure Storage | flutter_secure_storage 9+ | Token storage |
+| Backend | Supabase 1.10+ | Auth + DB |
+| Local DB | Isar 3.1+ | Offline cache |
+| Analytics | PostHog | Usage tracking |
+| Monitoring | Sentry | Error tracking |
 
 ## Architecture
 
-The project follows **Clean Architecture** with:
-- **Feature-first** folder structure
-- **Repository Pattern** for data access
-- **Dependency Injection** for loose coupling
-- **SOLID Principles** throughout
-- **Offline-first** design with Isar
-- **Security-first** approach
-
-### Folder Structure
+Follows **Clean Architecture** with feature-first folder structure:
 
 ```
 lib/
-├── core/                    # Core utilities and infrastructure
-│   ├── exceptions/         # Custom exception classes
-│   ├── extensions/         # Dart extensions
-│   ├── models/            # Core domain models
-│   ├── services/          # Core services (initialization, etc.)
-│   └── widgets/           # Reusable widgets
-├── features/              # Feature modules (feature-first)
+├── config/                    # App configuration
+├── core/                      # Core infrastructure
+│   ├── exceptions/            # Custom exception classes
+│   ├── extensions/            # Dart extensions
+│   ├── network/               # HTTP client + interceptors
+│   ├── security/              # Auth + session management
+│   ├── services/              # Core services
+│   └── widgets/               # Reusable widgets
+├── features/                  # Feature modules
 │   ├── auth/
-│   │   ├── data/         # Data layer (repositories, data sources)
-│   │   ├── domain/       # Domain layer (entities, use cases)
-│   │   └── presentation/ # Presentation layer (screens, widgets)
+│   │   ├── data/              # Repository implementations
+│   │   ├── domain/            # Entities, use cases
+│   │   └── presentation/      # Screens, widgets
 │   ├── dashboard/
 │   ├── threat_analysis/
 │   ├── ai_chat/
 │   └── reports/
-├── shared/                # Shared utilities
-│   ├── models/           # Shared domain models
-│   └── providers/        # Shared Riverpod providers
-├── services/             # Application services
-│   ├── api/             # API clients
-│   ├── database/        # Database service
-│   └── cache/           # Cache service
-├── data/                # Global data layer
-└── config/              # Configuration files
+└── main.dart
 ```
+
+### Domain Layer Rules
+- No Flutter imports
+- No Dio imports
+- No Supabase imports
+- Pure Dart only
+
+### Presentation Layer Rules
+- No direct API calls
+- Use repositories through dependency injection
 
 ## Getting Started
 
@@ -91,7 +103,6 @@ cp .env.example .env
 ```env
 SUPABASE_URL=your-supabase-url
 SUPABASE_ANON_KEY=your-anon-key
-DEEPSEEK_API_KEY=your-api-key
 POSTHOG_API_KEY=your-posthog-key
 SENTRY_DSN=your-sentry-dsn
 ```
@@ -115,8 +126,9 @@ flutter run
 
 ### 1. Authentication
 - Supabase authentication
-- Secure token storage
-- Multi-factor authentication ready
+- Secure token storage (flutter_secure_storage)
+- Session expiration handling
+- Auth guards on protected routes
 
 ### 2. Dashboard
 - Recent analyses overview
@@ -126,16 +138,15 @@ flutter run
 
 ### 3. Threat Analysis
 - System description input
-- AI-powered threat generation
-- Assets identification
-- Attack path mapping
-- Risk calculation
+- STRIDE threat classification
+- DREAD risk scoring
+- Asset identification
 - Mitigation strategies
 
 ### 4. AI Chat
 - Context-aware conversation
 - Threat modeling focused
-- Real-time responses
+- Routed through Supabase Edge Functions
 - Analysis history
 
 ### 5. Reports
@@ -148,95 +159,83 @@ flutter run
 - Local data synchronization
 - Offline analysis access
 - Automatic sync when online
-- Conflict resolution
+
+## Threat Modeling
+
+### STRIDE Classification
+
+| Category | Description |
+|----------|-------------|
+| Spoofing | Identity impersonation |
+| Tampering | Data modification |
+| Repudiation | Denying actions |
+| Information Disclosure | Data exposure |
+| Denial of Service | Availability attacks |
+| Elevation of Privilege | Unauthorized access |
+
+### DREAD Scoring
+
+Each threat scored 1-10 on:
+- **D**amage Potential
+- **R**eproducibility
+- **E**xploitability
+- **A**ffected Users
+- **D**iscoverability
 
 ## Development
 
+### Testing
+
+```bash
+flutter test                    # Run all tests
+flutter test --coverage         # Run with coverage
+flutter analyze                 # Check code quality
+```
+
 ### Code Generation
 
-Generate models and providers:
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-Watch for changes:
-```bash
-dart run build_runner watch --delete-conflicting-outputs
-```
+## CI/CD
 
-### Testing
+GitHub Actions workflow runs:
+- **Lint & Analyze** — Secret scanning, lint enforcement, architecture compliance
+- **Build & Test** — Unit tests, domain layer validation
+- **Security Checks** — Dependency audit, secure storage verification
 
-Run tests:
-```bash
-flutter test
-```
-
-Run specific test:
-```bash
-flutter test test/features/auth/...
-```
-
-### Linting
-
-Check code quality:
-```bash
-flutter analyze
-```
-
-Format code:
-```bash
-dart format .
-```
-
-Fix linting issues:
-```bash
-dart fix --apply
-```
-
-## Contributing
-
-1. Create a feature branch: `git checkout -b feature/your-feature`
-2. Commit your changes: `git commit -am 'Add feature'`
-3. Push to the branch: `git push origin feature/your-feature`
-4. Create a Pull Request
-
-### Code Standards
-
-- Follow the existing code style
-- Write tests for new features
-- Update documentation
-- Ensure all lints pass
-- Use meaningful commit messages
+Build fails on:
+- Lint errors
+- Test failures
+- Secret leaks
+- Architecture violations
 
 ## Security
 
-- All API keys stored in `.env` (never committed)
-- Secure token storage using Supabase
-- SSL certificate pinning ready
-- Error tracking via Sentry (PII filtered)
-- OWASP security best practices
+- No AI provider secrets in client code
+- Secure token storage via flutter_secure_storage
+- Auth guards on all protected routes
+- Log redaction for sensitive data
+- CI/CD secret scanning
+- OWASP MASVS compliance
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Threat Modeling Methodology](docs/threat-modeling-methodology.md)
+- [Deployment Guide](docs/deployment-guide.md)
+- [Security Policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
+- [Roadmap](docs/roadmap.md)
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License - See LICENSE file for details.
 
 ## Support
 
-For issues and questions:
 - GitHub Issues: [ThreatLens AI Issues](https://github.com/dandasaisamith/threatlensAI/issues)
-
-## Roadmap
-
-- [ ] Complete Authentication Module
-- [ ] Threat Analysis Engine
-- [ ] DeepSeek AI Integration
-- [ ] Isar Database Setup
-- [ ] PDF Report Generation
-- [ ] Multi-language Support
-- [ ] Advanced Analytics Dashboard
-- [ ] Team Collaboration Features
-- [ ] API for Third-party Integrations
-- [ ] Mobile-specific Optimizations
 
 ---
 
