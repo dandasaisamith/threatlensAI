@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/security/session_manager.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/sign_up_screen.dart';
+import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/threat_analysis/presentation/screens/threat_analysis_screen.dart';
 import '../features/ai_chat/presentation/screens/ai_chat_screen.dart';
@@ -24,15 +26,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthed =
           sessionManager.currentState == SessionState.authenticated;
-      final isLoginRoute = state.matchedLocation == '/login';
+      final isAuthRoute = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/signup' ||
+          state.matchedLocation == '/reset-password';
 
-      // Unauthenticated: only allow login
-      if (!isAuthed && !isLoginRoute) {
+      // Unauthenticated: only allow auth routes
+      if (!isAuthed && !isAuthRoute) {
         return '/login';
       }
 
-      // Authenticated: redirect away from login to dashboard
-      if (isAuthed && isLoginRoute) {
+      // Authenticated: redirect away from auth routes to dashboard
+      if (isAuthed && isAuthRoute) {
         return '/';
       }
 
@@ -67,6 +71,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        name: 'signup',
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        name: 'reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

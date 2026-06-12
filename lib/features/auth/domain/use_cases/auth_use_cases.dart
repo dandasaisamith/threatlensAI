@@ -46,3 +46,15 @@ class GetCurrentUserUseCase {
 
   Future<AuthUser?> call() => _repository.getCurrentUser();
 }
+
+/// Use case for sending a password reset email.
+class ResetPasswordUseCase {
+  ResetPasswordUseCase({required AuthRepository repository})
+      : _repository = repository;
+
+  final AuthRepository _repository;
+
+  Future<void> call({required String email}) {
+    return _repository.sendPasswordResetEmail(email);
+  }
+}

@@ -4,32 +4,31 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/auth_providers.dart';
 
-/// Login screen for user authentication.
-///
-/// Provides Email and Password inputs and handles the authentication process
-/// via [LoginController].
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+/// Sign Up screen for new user registration.
+class SignUpScreen extends ConsumerStatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _onSignIn() {
+  void _onSignUp() {
     if (_formKey.currentState!.validate()) {
-      ref.read(loginControllerProvider.notifier).signIn(
+      ref.read(signUpControllerProvider.notifier).signUp(
             _emailController.text.trim(),
             _passwordController.text,
           );
@@ -38,9 +37,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen for error states
+    // Listen for error and success states
     ref.listen<AsyncValue<void>>(
-      loginControllerProvider,
+      signUpControllerProvider,
       (_, state) {
         if (!state.isLoading && state.hasError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -49,14 +48,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               backgroundColor: Colors.redAccent,
             ),
           );
+        } else if (!state.isLoading && !state.hasError && state.hasValue) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully! Please sign in.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Redirect to login is handled by router or user can tap back
         }
       },
     );
 
-    final loginState = ref.watch(loginControllerProvider);
-    final isLoading = loginState.isLoading;
+    final signUpState = ref.watch(signUpControllerProvider);
+    final isLoading = signUpState.isLoading;
 
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Create Account'),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -72,23 +86,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Icon(
-                        Icons.shield_outlined,
+                        Icons.person_add_outlined,
                         size: 64,
                         color: Colors.blueAccent,
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Welcome Back',
+                        'Join ThreatLens AI',
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Sign in to ThreatLens AI',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white70,
                             ),
                         textAlign: TextAlign.center,
                       ),
@@ -122,29 +128,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           border: OutlineInputBorder(),
                         ),
                         obscureText: true,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         enabled: !isLoading,
-                        onFieldSubmitted: (_) => _onSignIn(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return 'Please enter a password';
+                          }
+                          if (value.length < 8) {
+                            return 'Password must be at least 8 characters';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: isLoading
-                              ? null
-                              : () => context.push('/reset-password'),
-                          child: const Text('Forgot Password?'),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirm Password',
+                          prefixIcon: Icon(Icons.lock_reset_outlined),
+                          border: OutlineInputBorder(),
                         ),
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        enabled: !isLoading,
+                        onFieldSubmitted: (_) => _onSignUp(),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       ElevatedButton(
-                        onPressed: isLoading ? null : _onSignIn,
+                        onPressed: isLoading ? null : _onSignUp,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           backgroundColor: Colors.blueAccent,
@@ -160,7 +180,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               )
                             : const Text(
-                                'Sign In',
+                                'Create Account',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                       ),
@@ -168,12 +188,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text("Don't have an account?"),
+                          const Text('Already have an account?'),
                           TextButton(
                             onPressed: isLoading
                                 ? null
-                                : () => context.push('/signup'),
-                            child: const Text('Sign Up'),
+                                : () {
+                                    if (context.canPop()) {
+                                      context.pop();
+                                    } else {
+                                      context.pushReplacement('/login');
+                                    }
+                                  },
+                            child: const Text('Sign In'),
                           ),
                         ],
                       ),
