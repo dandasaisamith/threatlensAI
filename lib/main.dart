@@ -61,28 +61,24 @@ class ThreatLensAIApp extends ConsumerWidget {
   }
 
   /// Build the application theme
-  ThemeData _buildTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF1F2937),
-        brightness: Brightness.dark,
-      ),
-      fontFamily: 'GoogleSans',
-      appBarTheme: const AppBarTheme(
-        elevation: 0,
-        backgroundColor: Color(0xFF1F2937),
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      scaffoldBackgroundColor: const Color(0xFF111827),
-      cardTheme: CardThemeData(
-        elevation: 1,
-        color: const Color(0xFF1F2937),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-  }
+  ThemeData _buildTheme() => ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF1F2937),
+      brightness: Brightness.dark,
+    ),
+    fontFamily: 'GoogleSans',
+    appBarTheme: const AppBarTheme(
+      elevation: 0,
+      backgroundColor: Color(0xFF1F2937),
+      foregroundColor: Colors.white,
+      centerTitle: true,
+    ),
+    scaffoldBackgroundColor: const Color(0xFF111827),
+    cardTheme: CardThemeData(
+      elevation: 1,
+      color: const Color(0xFF1F2937),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  );
 }

@@ -55,14 +55,12 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) {
-    return _dio.get<T>(
-      path,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-    );
-  }
+  }) => _dio.get<T>(
+    path,
+    queryParameters: queryParameters,
+    options: options,
+    cancelToken: cancelToken,
+  );
 
   /// Perform a POST request.
   Future<Response<T>> post<T>(
@@ -71,15 +69,13 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) {
-    return _dio.post<T>(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-    );
-  }
+  }) => _dio.post<T>(
+    path,
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+    cancelToken: cancelToken,
+  );
 
   /// Perform a PUT request.
   Future<Response<T>> put<T>(
@@ -88,15 +84,13 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) {
-    return _dio.put<T>(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-    );
-  }
+  }) => _dio.put<T>(
+    path,
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+    cancelToken: cancelToken,
+  );
 
   /// Perform a DELETE request.
   Future<Response<T>> delete<T>(
@@ -105,15 +99,13 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-  }) {
-    return _dio.delete<T>(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-      cancelToken: cancelToken,
-    );
-  }
+  }) => _dio.delete<T>(
+    path,
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+    cancelToken: cancelToken,
+  );
 
   /// Convert Dio exceptions to typed app exceptions.
   static AppException handleError(Object error) {

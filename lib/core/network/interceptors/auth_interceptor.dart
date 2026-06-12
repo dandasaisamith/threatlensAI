@@ -15,7 +15,10 @@ class AuthInterceptor extends Interceptor {
   final SecureStorageService _secureStorage;
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     // Skip auth for public endpoints
     if (_isPublicEndpoint(options.path)) {
       return handler.next(options);
@@ -39,11 +42,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   bool _isPublicEndpoint(String path) {
-    const publicPaths = [
-      '/auth/v1/token',
-      '/auth/v1/signup',
-      '/auth/v1/otp',
-    ];
+    const publicPaths = ['/auth/v1/token', '/auth/v1/signup', '/auth/v1/otp'];
     return publicPaths.any((p) => path.contains(p));
   }
 }

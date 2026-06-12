@@ -11,12 +11,10 @@ class CreateAnalysisUseCase {
   Future<ThreatAnalysis> call({
     required String userId,
     required String systemDescription,
-  }) {
-    return _repository.createAnalysis(
-      userId: userId,
-      systemDescription: systemDescription,
-    );
-  }
+  }) => _repository.createAnalysis(
+    userId: userId,
+    systemDescription: systemDescription,
+  );
 }
 
 /// Use case for getting an analysis by ID.

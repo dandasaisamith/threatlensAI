@@ -18,14 +18,11 @@ class ThreatAnalysisLocalDataSource {
   }
 
   /// Get a cached analysis by ID.
-  Future<Map<String, dynamic>?> getCachedAnalysis(String id) async {
-    return null;
-  }
+  Future<Map<String, dynamic>?> getCachedAnalysis(String id) async => null;
 
   /// Get all cached analyses for a user.
-  Future<List<Map<String, dynamic>>> getCachedAnalyses(String userId) async {
-    return [];
-  }
+  Future<List<Map<String, dynamic>>> getCachedAnalyses(String userId) async =>
+      [];
 
   /// Delete a cached analysis.
   Future<void> deleteCachedAnalysis(String id) async {

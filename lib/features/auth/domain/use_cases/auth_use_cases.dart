@@ -10,9 +10,8 @@ class SignInUseCase {
 
   final AuthRepository _repository;
 
-  Future<AuthResult> call({required String email, required String password}) {
-    return _repository.signIn(email: email, password: password);
-  }
+  Future<AuthResult> call({required String email, required String password}) =>
+      _repository.signIn(email: email, password: password);
 }
 
 /// Use case for signing up a new user.
@@ -22,9 +21,8 @@ class SignUpUseCase {
 
   final AuthRepository _repository;
 
-  Future<AuthResult> call({required String email, required String password}) {
-    return _repository.signUp(email: email, password: password);
-  }
+  Future<AuthResult> call({required String email, required String password}) =>
+      _repository.signUp(email: email, password: password);
 }
 
 /// Use case for signing out.
