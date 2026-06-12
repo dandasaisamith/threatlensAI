@@ -32,9 +32,8 @@ class RetryInterceptor extends Interceptor {
 
   static const _retryKey = 'retry_count';
 
-  int _getRetryCount(RequestOptions options) {
-    return (options.extra[_retryKey] as int?) ?? 0;
-  }
+  int _getRetryCount(RequestOptions options) =>
+      (options.extra[_retryKey] as int?) ?? 0;
 
   void _setRetryCount(RequestOptions options, int count) {
     options.extra[_retryKey] = count;
@@ -98,4 +97,3 @@ class RetryInterceptor extends Interceptor {
     return Duration(milliseconds: cappedMs + jitterMs);
   }
 }
-

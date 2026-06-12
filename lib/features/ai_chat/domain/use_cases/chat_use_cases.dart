@@ -11,12 +11,7 @@ class SendMessageUseCase {
   Future<ChatMessage> call({
     required String analysisId,
     required String content,
-  }) {
-    return _repository.sendMessage(
-      analysisId: analysisId,
-      content: content,
-    );
-  }
+  }) => _repository.sendMessage(analysisId: analysisId, content: content);
 }
 
 /// Use case for getting chat history.

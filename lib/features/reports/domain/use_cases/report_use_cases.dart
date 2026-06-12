@@ -12,13 +12,11 @@ class GenerateReportUseCase {
     required String analysisId,
     required String userId,
     required ReportFormat format,
-  }) {
-    return _repository.generateReport(
-      analysisId: analysisId,
-      userId: userId,
-      format: format,
-    );
-  }
+  }) => _repository.generateReport(
+    analysisId: analysisId,
+    userId: userId,
+    format: format,
+  );
 }
 
 /// Use case for getting all reports for a user.

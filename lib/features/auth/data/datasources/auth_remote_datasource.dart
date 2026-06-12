@@ -14,23 +14,13 @@ class AuthRemoteDataSource {
   Future<AuthResponse> signIn({
     required String email,
     required String password,
-  }) {
-    return _supabase.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-  }
+  }) => _supabase.auth.signInWithPassword(email: email, password: password);
 
   /// Sign up with email and password.
   Future<AuthResponse> signUp({
     required String email,
     required String password,
-  }) {
-    return _supabase.auth.signUp(
-      email: email,
-      password: password,
-    );
-  }
+  }) => _supabase.auth.signUp(email: email, password: password);
 
   /// Sign out.
   Future<void> signOut() => _supabase.auth.signOut();

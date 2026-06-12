@@ -20,10 +20,7 @@ class ThreatAnalysisRemoteDataSource {
   }) async {
     final response = await _apiClient.post(
       '$_baseUrl/threat-analysis',
-      data: {
-        'userId': userId,
-        'systemDescription': systemDescription,
-      },
+      data: {'userId': userId, 'systemDescription': systemDescription},
     );
     return response.data as Map<String, dynamic>;
   }

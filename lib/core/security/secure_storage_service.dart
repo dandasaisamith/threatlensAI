@@ -11,10 +11,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// - Wipe all data on logout
 class SecureStorageService {
   SecureStorageService({AndroidOptions? androidOptions, IOSOptions? iosOptions})
-      : _storage = FlutterSecureStorage(
-          aOptions: androidOptions ?? _defaultAndroidOptions,
-          iOptions: iosOptions ?? _defaultIOSOptions,
-        );
+    : _storage = FlutterSecureStorage(
+        aOptions: androidOptions ?? _defaultAndroidOptions,
+        iOptions: iosOptions ?? _defaultIOSOptions,
+      );
 
   final FlutterSecureStorage _storage;
 
@@ -39,9 +39,7 @@ class SecureStorageService {
   }
 
   /// Retrieve the stored access token.
-  Future<String?> getAccessToken() async {
-    return _storage.read(key: _accessTokenKey);
-  }
+  Future<String?> getAccessToken() async => _storage.read(key: _accessTokenKey);
 
   /// Store the refresh token securely.
   Future<void> storeRefreshToken(String token) async {
@@ -49,9 +47,8 @@ class SecureStorageService {
   }
 
   /// Retrieve the stored refresh token.
-  Future<String?> getRefreshToken() async {
-    return _storage.read(key: _refreshTokenKey);
-  }
+  Future<String?> getRefreshToken() async =>
+      _storage.read(key: _refreshTokenKey);
 
   /// Store session expiry timestamp (milliseconds since epoch).
   Future<void> storeSessionExpiry(int expiryMs) async {
@@ -71,9 +68,7 @@ class SecureStorageService {
   }
 
   /// Retrieve the stored user ID.
-  Future<String?> getUserId() async {
-    return _storage.read(key: _userIdKey);
-  }
+  Future<String?> getUserId() async => _storage.read(key: _userIdKey);
 
   /// Store the authenticated user's email.
   Future<void> storeUserEmail(String email) async {
@@ -81,9 +76,7 @@ class SecureStorageService {
   }
 
   /// Retrieve the stored user email.
-  Future<String?> getUserEmail() async {
-    return _storage.read(key: _userEmailKey);
-  }
+  Future<String?> getUserEmail() async => _storage.read(key: _userEmailKey);
 
   /// Check whether a session exists (access token is present).
   Future<bool> hasSession() async {

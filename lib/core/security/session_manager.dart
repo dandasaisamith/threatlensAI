@@ -171,9 +171,4 @@ class SessionManager extends ChangeNotifier {
 }
 
 /// Represents the possible states of an authentication session.
-enum SessionState {
-  unknown,
-  authenticated,
-  unauthenticated,
-  expired,
-}
+enum SessionState { unknown, authenticated, unauthenticated, expired }

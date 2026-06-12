@@ -36,28 +36,20 @@ extension BuildContextExtensions on BuildContext {
 
   /// Show a snackbar with a message
   void showSnackBar(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(this).showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// Show an error snackbar
   void showErrorSnackBar(String message) {
     ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: colors.error,
-      ),
+      SnackBar(content: Text(message), backgroundColor: colors.error),
     );
   }
 
   /// Show a success snackbar
   void showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: colors.primary,
-      ),
+      SnackBar(content: Text(message), backgroundColor: colors.primary),
     );
   }
 
@@ -67,19 +59,10 @@ extension BuildContextExtensions on BuildContext {
   }
 
   /// Push a named route
-  Future<T?> pushNamed<T>(
-    String routeName, {
-    Object? arguments,
-  }) {
-    return Navigator.of(this).pushNamed(routeName, arguments: arguments);
-  }
+  Future<T?> pushNamed<T>(String routeName, {Object? arguments}) =>
+      Navigator.of(this).pushNamed(routeName, arguments: arguments);
 
   /// Replace current route with a named route
-  Future<T?> pushReplacementNamed<T>(
-    String routeName, {
-    Object? arguments,
-  }) {
-    return Navigator.of(this)
-        .pushReplacementNamed(routeName, arguments: arguments);
-  }
+  Future<T?> pushReplacementNamed<T>(String routeName, {Object? arguments}) =>
+      Navigator.of(this).pushReplacementNamed(routeName, arguments: arguments);
 }

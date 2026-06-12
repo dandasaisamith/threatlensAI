@@ -99,10 +99,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final session = response.session;
 
     if (session == null) {
-      return AuthResult(
-        user: appUser,
-        requiresEmailVerification: true,
-      );
+      return AuthResult(user: appUser, requiresEmailVerification: true);
     }
 
     final expiryMs = _expiresAtToMilliseconds(session.expiresAt);
@@ -132,18 +129,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthUser?> getCurrentUser() async {
-    return _toAuthUser(_supabase.auth.currentUser);
-  }
+  Future<AuthUser?> getCurrentUser() async =>
+      _toAuthUser(_supabase.auth.currentUser);
 
   @override
-  Stream<AuthUser?> get authStateChanges {
-    return _supabase.auth.onAuthStateChange.map((event) {
-      final session = event.session;
-      if (session == null) return null;
-      return _toAuthUser(session.user);
-    });
-  }
+  Stream<AuthUser?> get authStateChanges =>
+      _supabase.auth.onAuthStateChange.map((event) {
+        final session = event.session;
+        if (session == null) return null;
+        return _toAuthUser(session.user);
+      });
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {

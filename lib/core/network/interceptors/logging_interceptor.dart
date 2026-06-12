@@ -46,17 +46,11 @@ class AppLoggingInterceptor extends Interceptor {
       '[HTTP REQUEST] ${options.method} ${options.uri}',
       name: 'ApiClient',
     );
-    developer.log(
-      '  Headers: $sanitizedHeaders',
-      name: 'ApiClient',
-    );
+    developer.log('  Headers: $sanitizedHeaders', name: 'ApiClient');
 
     if (options.data != null) {
       final sanitizedBody = _sanitizeBody(options.data);
-      developer.log(
-        '  Body: $sanitizedBody',
-        name: 'ApiClient',
-      );
+      developer.log('  Body: $sanitizedBody', name: 'ApiClient');
     }
 
     return handler.next(options);
@@ -77,10 +71,7 @@ class AppLoggingInterceptor extends Interceptor {
       final truncated = sanitizedData.toString().length > 500
           ? '${sanitizedData.toString().substring(0, 500)}...[truncated]'
           : sanitizedData;
-      developer.log(
-        '  Data: $truncated',
-        name: 'ApiClient',
-      );
+      developer.log('  Data: $truncated', name: 'ApiClient');
     }
 
     return handler.next(response);
@@ -94,14 +85,8 @@ class AppLoggingInterceptor extends Interceptor {
       '[HTTP ERROR] ${err.requestOptions.method} ${err.requestOptions.uri}',
       name: 'ApiClient',
     );
-    developer.log(
-      '  Status: ${err.response?.statusCode}',
-      name: 'ApiClient',
-    );
-    developer.log(
-      '  Message: ${err.message}',
-      name: 'ApiClient',
-    );
+    developer.log('  Status: ${err.response?.statusCode}', name: 'ApiClient');
+    developer.log('  Message: ${err.message}', name: 'ApiClient');
 
     return handler.next(err);
   }
@@ -132,7 +117,7 @@ class AppLoggingInterceptor extends Interceptor {
       return sanitized;
     }
     if (body is List) {
-      return body.map((e) => _sanitizeBody(e)).toList();
+      return body.map(_sanitizeBody).toList();
     }
     return body;
   }
