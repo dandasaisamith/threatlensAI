@@ -20,28 +20,32 @@ void main() async {
   // Initialize core services
   await InitializationService.initialize();
 
-  // Initialize Sentry for error tracking
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = EnvironmentConfig.sentryDsn;
-      options.environment = EnvironmentConfig.environment;
-      // Higher sample rate in debug mode
-      options.tracesSampleRate = EnvironmentConfig.isDebug ? 1.0 : 0.1;
-      // Don't capture events in debug mode by default
-      options.debug = EnvironmentConfig.isDebug;
-    },
-    appRunner: () => runApp(
-      ProviderScope(
-        overrides: [
-          // Override sessionManagerProvider with the initialized instance
-          sessionManagerProvider.overrideWithValue(
-            InitializationService.sessionManager,
-          ),
-        ],
-        child: const ThreatLensAIApp(),
+  final app = ProviderScope(
+    overrides: [
+      // Override sessionManagerProvider with the initialized instance
+      sessionManagerProvider.overrideWithValue(
+        InitializationService.sessionManager,
       ),
-    ),
+    ],
+    child: const ThreatLensAIApp(),
   );
+
+  // Initialize Sentry only when DSN is not empty
+  if (EnvironmentConfig.sentryDsn.isNotEmpty) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = EnvironmentConfig.sentryDsn;
+        options.environment = EnvironmentConfig.environment;
+        // Higher sample rate in debug mode
+        options.tracesSampleRate = EnvironmentConfig.isDebug ? 1.0 : 0.1;
+        // Don't capture events in debug mode by default
+        options.debug = EnvironmentConfig.isDebug;
+      },
+      appRunner: () => runApp(app),
+    );
+  } else {
+    runApp(app);
+  }
 }
 
 /// Root widget for the ThreatLens AI application

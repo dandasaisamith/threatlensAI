@@ -1,5 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 /// Configuration class for environment variables.
 ///
 /// Loads and validates all required environment variables on app startup.
@@ -20,24 +18,23 @@ class EnvironmentConfig {
   /// Mobile app communicates only with this endpoint — never with AI providers directly.
   static late final String edgeFunctionBaseUrl;
 
-  /// Initialize environment configuration from .env file.
+  /// Initialize environment configuration from compile-time variables.
   ///
   /// Throws [Exception] if required variables are missing.
   static Future<void> initialize() async {
-    await dotenv.load(fileName: '.env');
-
-    supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
-    supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
-    postHogApiKey = dotenv.env['POSTHOG_API_KEY'] ?? '';
-    postHogApiHost =
-        dotenv.env['POSTHOG_API_HOST'] ?? 'https://us.posthog.com';
-    sentryDsn = dotenv.env['SENTRY_DSN'] ?? '';
-    environment = dotenv.env['APP_ENV'] ?? 'development';
-    isDebug = dotenv.env['DEBUG_MODE'] == 'true';
+    supabaseUrl = const String.fromEnvironment('SUPABASE_URL', defaultValue: '');
+    supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
+    postHogApiKey = const String.fromEnvironment('POSTHOG_API_KEY', defaultValue: '');
+    postHogApiHost = const String.fromEnvironment('POSTHOG_API_HOST', defaultValue: 'https://us.posthog.com');
+    sentryDsn = const String.fromEnvironment('SENTRY_DSN', defaultValue: '');
+    environment = const String.fromEnvironment('APP_ENV', defaultValue: 'development');
+    isDebug = const String.fromEnvironment('DEBUG_MODE', defaultValue: '') == 'true';
 
     // Edge Function base URL defaults to the Supabase project URL
-    edgeFunctionBaseUrl = dotenv.env['EDGE_FUNCTION_BASE_URL'] ??
-        '$supabaseUrl/functions/v1';
+    edgeFunctionBaseUrl = const String.fromEnvironment('EDGE_FUNCTION_BASE_URL', defaultValue: '');
+    if (edgeFunctionBaseUrl.isEmpty && supabaseUrl.isNotEmpty) {
+      edgeFunctionBaseUrl = '$supabaseUrl/functions/v1';
+    }
 
     _validateRequiredConfigs();
   }

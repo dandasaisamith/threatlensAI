@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:posthog_flutter/posthog_flutter.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/environment_config.dart';
 import '../network/api_client.dart';
@@ -39,7 +39,7 @@ class InitializationService {
       supabase: _supabaseClient,
     );
     await _initializeIsar();
-    await _initializePostHog();
+
     await _sessionManager.initialize();
     _registerServices();
   }
@@ -57,11 +57,7 @@ class InitializationService {
     _supabaseClient = supabase.client;
   }
 
-  static Future<void> _initializePostHog() async {
-    // Posthog v3.3.0: setup() was removed, use enable() to start tracking
-    // API key is configured via native platform (AndroidManifest.xml / Info.plist)
-    await Posthog().enable();
-  }
+
 
   static void _registerServices() {
     final sl = GetIt.instance;
