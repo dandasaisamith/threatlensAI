@@ -67,18 +67,29 @@ class ThreatAnalysisModel {
                 .toList() ??
             const [],
         dreadScore: _parseDreadScore(
-          (json['dread_score'] as Map<String, dynamic>?) ?? const {},
+          json['dread_scores'] ?? json['dread_score'] ?? const <String, dynamic>{},
         ),
         mitigations: _parseMitigations(json['mitigations']),
       );
 
-  static DreadScore _parseDreadScore(Map<String, dynamic> json) => DreadScore(
-        damagePotential: (json['damage_potential'] as num?)?.toInt() ?? 5,
-        reproducibility: (json['reproducibility'] as num?)?.toInt() ?? 5,
-        exploitability: (json['exploitability'] as num?)?.toInt() ?? 5,
-        affectedUsers: (json['affected_users'] as num?)?.toInt() ?? 5,
-        discoverability: (json['discoverability'] as num?)?.toInt() ?? 5,
-      );
+  static DreadScore _parseDreadScore(dynamic raw) {
+    Map<String, dynamic> json = {};
+    if (raw is List) {
+      if (raw.isNotEmpty) {
+        json = raw.first as Map<String, dynamic>;
+      }
+    } else if (raw is Map) {
+      json = raw as Map<String, dynamic>;
+    }
+    
+    return DreadScore(
+      damagePotential: (json['damage_potential'] ?? json['damage'] as num?)?.toInt() ?? 5,
+      reproducibility: (json['reproducibility'] as num?)?.toInt() ?? 5,
+      exploitability: (json['exploitability'] as num?)?.toInt() ?? 5,
+      affectedUsers: (json['affected_users'] ?? json['affectedUsers'] as num?)?.toInt() ?? 5,
+      discoverability: (json['discoverability'] as num?)?.toInt() ?? 5,
+    );
+  }
 
   static List<Mitigation> _parseMitigations(dynamic raw) {
     if (raw == null) return const [];

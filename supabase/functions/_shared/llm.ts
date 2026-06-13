@@ -1,9 +1,6 @@
 import { ThreatAnalysisResponse } from "./types.ts";
 import { logger } from "./logger.ts";
 
-const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
-const MODEL = "deepseek-chat";
-
 // System prompt to enforce strict JSON structure
 const SYSTEM_PROMPT = `
 You are a top-tier cybersecurity architect and threat modeler.
@@ -55,12 +52,15 @@ Required JSON Structure:
 `;
 
 /**
- * Fetches threat analysis from DeepSeek with timeout and retry logic
+ * Fetches threat analysis from OpenRouter (or compatible LLM) with timeout and retry logic
  */
 export async function generateThreatModel(
   architectureDescription: string,
   apiKey: string,
 ): Promise<ThreatAnalysisResponse> {
+  const baseUrl = Deno.env.get("LLM_BASE_URL") || "https://openrouter.ai/api/v1/chat/completions";
+  const model = Deno.env.get("LLM_MODEL") || "deepseek/deepseek-chat-v3-0324";
+  
   const maxRetries = 3;
   const timeoutMs = 45000; // 45 seconds
 
@@ -69,16 +69,18 @@ export async function generateThreatModel(
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      logger.info(`Invoking DeepSeek API (Attempt ${attempt}/${maxRetries})...`);
+      logger.info(`Invoking LLM API (Attempt ${attempt}/${maxRetries})...`, { baseUrl, model });
 
-      const response = await fetch(DEEPSEEK_API_URL, {
+      const response = await fetch(baseUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": "https://threatlens.ai",
+          "X-Title": "ThreatLens AI"
         },
         body: JSON.stringify({
-          model: MODEL,
+          model: model,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: `Analyze the following architecture and generate a threat model:\n\n${architectureDescription}` }
@@ -92,21 +94,21 @@ export async function generateThreatModel(
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`DeepSeek API Error: ${response.status} ${response.statusText}`);
+        throw new Error(`LLM API Error: ${response.status} ${response.statusText}`);
       }
 
       const rawJson = await response.json();
       const content = rawJson.choices?.[0]?.message?.content;
 
       if (!content) {
-        throw new Error("No content returned from DeepSeek");
+        throw new Error("No content returned from LLM");
       }
 
       // Parse and roughly validate
       const parsed = JSON.parse(content) as ThreatAnalysisResponse;
       
       if (!parsed.assets || !parsed.threats || !parsed.dreadScores || !parsed.mitigations) {
-        throw new Error("DeepSeek response missing required top-level arrays");
+        throw new Error("LLM response missing required top-level arrays");
       }
 
       logger.info("Successfully generated threat model", {
@@ -135,5 +137,5 @@ export async function generateThreatModel(
     }
   }
 
-  throw new Error("Unexpected end of DeepSeek invocation loop");
+  throw new Error("Unexpected end of LLM invocation loop");
 }

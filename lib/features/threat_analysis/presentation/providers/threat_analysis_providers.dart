@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/security/secure_storage_service.dart';
@@ -22,7 +23,7 @@ import '../../domain/use_cases/threat_analysis_use_cases.dart';
 final threatAnalysisRepositoryProvider = Provider<ThreatAnalysisRepository>(
   (ref) => ThreatAnalysisRepositoryImpl(
     remoteDataSource: ThreatAnalysisRemoteDataSource(
-      apiClient: GetIt.instance<ApiClient>(),
+      supabaseClient: Supabase.instance.client,
     ),
     localDataSource: ThreatAnalysisLocalDataSource(
       isar: InitializationService.isar,
@@ -135,6 +136,9 @@ class CreateAnalysisNotifier extends AutoDisposeNotifier<CreateAnalysisState> {
     }
     if (raw.contains('401') || raw.contains('403')) {
       return 'Session expired. Please sign in again.';
+    }
+    if (raw.contains('429') || raw.contains('too many requests') || raw.contains('rate limit')) {
+      return 'Rate limit exceeded. Please try again later.';
     }
     if (raw.contains('timeout')) {
       return 'Request timed out. The AI analysis may take a moment — try again.';

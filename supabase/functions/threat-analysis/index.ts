@@ -4,12 +4,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { corsHeaders } from "../_shared/cors.ts";
 import { logger } from "../_shared/logger.ts";
 import { rateLimiter } from "../_shared/rate_limiter.ts";
-import { generateThreatModel } from "../_shared/deepseek.ts";
+import { generateThreatModel } from "../_shared/llm.ts";
 import { ThreatAnalysisRequest } from "../_shared/types.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY") ?? "";
+const LLM_API_KEY = Deno.env.get("LLM_API_KEY") ?? "";
 
 serve(async (req: Request) => {
   // 1. Handle CORS preflight requests
@@ -78,8 +78,8 @@ serve(async (req: Request) => {
       });
     }
 
-    if (!DEEPSEEK_API_KEY) {
-      logger.error("DEEPSEEK_API_KEY is not configured in Supabase Secrets");
+    if (!LLM_API_KEY) {
+      logger.error("LLM_API_KEY is not configured in Supabase Secrets");
       return new Response(JSON.stringify({ error: "Server configuration error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -90,7 +90,7 @@ serve(async (req: Request) => {
     logger.info(`Starting threat analysis for user ${user.id}`);
     
     const startTime = Date.now();
-    const threatModel = await generateThreatModel(requestData.architectureDescription, DEEPSEEK_API_KEY);
+    const threatModel = await generateThreatModel(requestData.architectureDescription, LLM_API_KEY);
     const latency = Date.now() - startTime;
 
     logger.info(`Threat analysis completed in ${latency}ms for user ${user.id}`);

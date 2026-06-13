@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../reports/presentation/providers/report_providers.dart';
 
 import '../../domain/entities/threat_analysis.dart';
 import 'threat_card.dart';
@@ -9,16 +12,43 @@ import 'threat_card.dart';
 ///   1. Risk score summary card (color-coded)
 ///   2. Identified assets chips
 ///   3. Threats list (expandable [ThreatCard] widgets)
-class AnalysisResultsView extends StatelessWidget {
+class AnalysisResultsView extends ConsumerWidget {
   const AnalysisResultsView({super.key, required this.analysis});
 
   final ThreatAnalysis analysis;
 
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<GenerateReportState>(generateReportProvider, (previous, next) {
+      if (next is GenerateReportSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Report generated successfully!'),
+            action: SnackBarAction(
+              label: 'Share',
+              onPressed: () {
+                ref.read(reportListProvider.notifier).exportReport(next.report.id);
+              },
+            ),
+          ),
+        );
+      } else if (next is GenerateReportError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to generate report: ${next.message}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    });
+
+    final generateState = ref.watch(generateReportProvider);
+    final isGenerating = generateState is GenerateReportLoading;
+
+    return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _RiskSummaryCard(analysis: analysis),
             if (analysis.assets.isNotEmpty) ...[
@@ -46,10 +76,24 @@ class AnalysisResultsView extends StatelessWidget {
             ],
             if (analysis.threats.isEmpty && analysis.assets.isEmpty)
               _EmptyResultsPlaceholder(status: analysis.status),
+            const SizedBox(height: 32),
+            if (analysis.status == AnalysisStatus.completed)
+              FilledButton.icon(
+                onPressed: isGenerating
+                    ? null
+                    : () {
+                        ref.read(generateReportProvider.notifier).generateReport(analysis.id);
+                      },
+                icon: isGenerating
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.picture_as_pdf),
+                label: Text(isGenerating ? 'Generating Report...' : 'Generate PDF Report'),
+              ),
             const SizedBox(height: 24),
           ],
         ),
       );
+  }
 }
 
 /// Summary card showing overall risk score and analysis metadata.
